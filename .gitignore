@@ -1,0 +1,13 @@
+node_modules/
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+*.swp
+
+# Build files
+build/
