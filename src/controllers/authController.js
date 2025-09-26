@@ -38,7 +38,7 @@ export const register = async (req, res) => {
       device: userAgent,
       location: { country: null, city: null },
       otp,
-      otpExpiry: Date.now() + 10 * 60 * 1000, // 10 min expiry
+      otpExpiry: Date.now() + 5 * 60 * 1000, // 5 min expiry
     });
 
     // Send OTP Email
