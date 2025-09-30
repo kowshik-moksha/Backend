@@ -99,13 +99,19 @@ export const login = async (req, res) => {
     if (!user || !(await user.matchPassword(password)))
       return res.status(401).json({ message: 'Invalid email or password' });
 
+    const token = generateToken(user._id);
+
+    // Save token in DB
+    user.token = token;
+    await user.save();
+
     res.status(200).json({
       success: true,
       data: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        token: generateToken(user._id),
+        token: token,
       },
     });
   } catch (error) {
