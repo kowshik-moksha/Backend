@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 
+import chatHistoryRoutes from './routes/chatHistoryRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
@@ -16,5 +17,6 @@ app.use(morgan('dev'));
 app.use('/api/blogs', blogRoutes);
 // Auth CRUD
 app.use('/api/auth', authRoutes);
-
+// Chat Boat
+app.use('/api/chat', chatHistoryRoutes);
 export default app;
