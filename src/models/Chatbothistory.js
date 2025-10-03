@@ -11,6 +11,9 @@ const chatbothistorySchema = new mongoose.Schema(
     answer: {
       type: String,
     },
+    product_id: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
