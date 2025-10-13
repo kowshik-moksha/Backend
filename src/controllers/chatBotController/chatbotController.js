@@ -7,20 +7,25 @@ export const getChatHistoryByUserId = async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'User ID is required' });
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
     }
 
-    const history = await ChatbotHistory.find({ user_id: userId }).sort({
-      createdAt: -1,
-    });
+    // Sort by timestamp descending — guaranteed consistent
+    const history = await ChatbotHistory.find({ user_id: userId })
+      .sort({ timestamp: 1 })
+      .lean();
 
     res.status(200).json({
       success: true,
       data: history,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
