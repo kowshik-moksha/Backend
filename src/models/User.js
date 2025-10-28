@@ -1,17 +1,13 @@
-// src/models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
+
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: [true, 'Name is required'],
-      trim: true,
-    },
+    name: { type: String, required: true, trim: true },
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: true,
       unique: true,
       lowercase: true,
       validate: {
@@ -21,52 +17,41 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [8, 'Password must be at least 8 characters'],
+      minlength: 8,
       validate: {
         validator: function (value) {
+          if (!value) return true; // skip for Google users
           return (
-            /[A-Z]/.test(value) && // uppercase
-            /[a-z]/.test(value) && // lowercase
-            /[0-9]/.test(value) && // number
-            /[!@#$%^&*(),.?":{}|<>]/.test(value) // special char
+            /[A-Z]/.test(value) &&
+            /[a-z]/.test(value) &&
+            /[0-9]/.test(value) &&
+            /[!@#$%^&*(),.?":{}|<>]/.test(value)
           );
         },
         message:
-          'Password must contain uppercase, lowercase, number, and special character',
+          'Password must contain uppercase, lowercase, number, and special char',
       },
     },
-    ip: { type: String },
-    device: { type: String },
-    location: {
-      country: String,
-      city: String,
-    },
-    otp: { type: String },
-    otpExpiry: { type: Date },
-    resetOtp: { type: String },
-    resetOtpExpiry: { type: Date },
+    profilePic: { type: String },
+    isGoogleUser: { type: Boolean, default: false },
     token: { type: String },
   },
   { timestamps: true }
 );
 
-// Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ createdAt: -1 });
 // Hash password before saving
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Method to compare password
+// Compare password
 userSchema.methods.matchPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+  if (!this.password) return false;
+  return bcrypt.compare(password, this.password);
 };
 
 const User = mongoose.model('User', userSchema);
-
 export default User;

@@ -7,6 +7,12 @@ import {
   sendOtpEmail,
   sendPasswordResetOtpEmail,
 } from '../services/emailService.js';
+import { OAuth2Client } from 'google-auth-library';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 // -------------------- JWT TOKEN GENERATION --------------------
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, JWT_SECRET, {
@@ -177,4 +183,60 @@ export const resetPassword = async (req, res) => {
 // Protected test route
 export const getProfile = async (req, res) => {
   res.status(200).json({ success: true, data: req.user });
+};
+
+// -------------------- GOOGLE LOGIN --------------------
+export const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken)
+      return res.status(400).json({ message: 'Missing Google ID token' });
+
+    // Verify Google ID Token
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    // Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        password: null,
+        profilePic: picture,
+        isGoogleUser: true,
+      });
+    } else {
+      // Update profile picture if changed
+      user.profilePic = picture;
+      user.isGoogleUser = true;
+      await user.save();
+    }
+
+    // Generate JWT
+    const token = generateToken(user._id);
+    user.token = token;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Google login successful',
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        token,
+        profilePic: user.profilePic,
+      },
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ success: false, message: 'Google login failed' });
+  }
 };

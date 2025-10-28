@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Google Login Example</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <h2>Login with Google</h2>
+
+    <!-- Google Sign-in Button -->
+    <div
+      id="g_id_onload"
+      data-client_id="698103095829-p2ensk4ue444nmlqvnukin4f80f0j6cj.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false"
+    ></div>
+
+    <div
+      class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+      data-text="sign_in_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
+    ></div>
+
+    <script>
+      async function handleCredentialResponse(response) {
+        try {
+          // Get Google ID token from the button
+          const idToken = response.credential;
+
+          // Send ID token to backend API
+          const res = await fetch('http://localhost:5000/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            // Store token in localStorage
+            localStorage.setItem('token', data.data.token);
+
+            // Display success
+            alert('Google Login Successful!');
+            console.log('User Info:', data.data);
+          } else {
+            alert('Google Login Failed!');
+            console.error('Backend error:', data);
+          }
+        } catch (err) {
+          console.error('Error during Google login:', err);
+          alert('Google Login Failed! Check console for details.');
+        }
+      }
+    </script>
+  </body>
+</html>

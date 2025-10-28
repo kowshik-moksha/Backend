@@ -7,6 +7,7 @@ import {
   getProfile,
   forgotPassword,
   resetPassword,
+  googleLogin,
 } from '../controllers/authController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -18,5 +19,5 @@ router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/profile', protect, getProfile);
-
+router.post('/google', googleLogin);
 export default router;
