@@ -12,6 +12,13 @@ const blogSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Content is required'],
     },
+    bannerImage: {
+      type: String,
+    },
+    blogImageGallery: {
+      type: [String],
+      default: [],
+    },
     author: {
       type: String,
       default: 'Anonymous',
